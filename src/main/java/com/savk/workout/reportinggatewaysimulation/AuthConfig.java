@@ -19,14 +19,36 @@ public class AuthConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http.authorizeRequests()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .x509()
-                .subjectPrincipalRegex("CN=(.*?)(?:,|$)")
-                .userDetailsService(userDetailsService())
-                .and().build();
+        return http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/**")
+                        .permitAll()
+                )
+                .authorizeHttpRequests(auth -> {
+                            try {
+                                auth
+                                        .requestMatchers("/secured/**")
+                                        .authenticated()
+                                        .and()
+                                        .x509()
+                                        .subjectPrincipalRegex("CN=(.*?)(?:,|$)")
+                                        .userDetailsService(userDetailsService());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                )
+                .build();
+
+
+//        return http.authorizeRequests()
+//                .anyRequest()
+//                .authenticated()
+//                .and()
+//                .x509()
+//                .subjectPrincipalRegex("CN=(.*?)(?:,|$)")
+//                .userDetailsService(userDetailsService())
+//                .and().build();
     }
 
     @Bean
